@@ -4,14 +4,13 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 // https://doc.rust-lang.org/std/io/struct.BufReader.html
-pub fn read_data(filename: String) -> Result<Data, std::io::Error> {
+pub fn read_data(filename: &str) -> Result<Data, std::io::Error> {
     let f = File::open(filename)?;
     let reader = BufReader::new(f);
 
     let mut points: Vec<Point> = Vec::new();
 
     for line in reader.lines().flatten() {
-        println!("{}\n", line);
         let mut iter = line.split_whitespace();
         let class = iter
             .next()

@@ -21,6 +21,19 @@ impl Point {
     }
 }
 
+impl PartialEq for Point {
+    fn eq(&self, other: &Self) -> bool {
+        for i in 0..self.features.len() {
+            if self.features[i] != other.features[i] {
+                return false;
+            }
+        }
+        // Disregard class, if features are same then this is the same point
+        true
+    }
+}
+impl Eq for Point {}
+
 pub struct Data {
     pub num_features: usize,
     pub set: Vec<Point>,
