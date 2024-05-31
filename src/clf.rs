@@ -1,5 +1,6 @@
 use crate::data::Data;
 use crate::data::Point;
+use crate::print_features;
 use core::f64::MAX;
 
 pub fn nearest_neighbor(data: &Data, point: &Point, mask: Option<&[usize]>) -> u32 {
@@ -19,21 +20,79 @@ pub fn nearest_neighbor(data: &Data, point: &Point, mask: Option<&[usize]>) -> u
     class
 }
 
-pub fn forward_selection() {
+pub fn forward_selection(data: Data) -> (f64, Vec<usize>) {
     // Start with no features (default rate)
-    let _features: Vec<usize> = Vec::new();
+    let mut best_features: Vec<usize> = Vec::new();
+    let mut curr_features: Vec<usize> = Vec::new();
+    let mut best_accuracy = cross_validation(&data, Some(&curr_features));
     // Attempt to add a feature at each stage
-
-    // Take the best attempt score and append onto that
+    for _i in 0..data.num_features {
+        let mut curr_accuracy: f64 = f64::MIN;
+        let mut best_feature = 0;
+        for j in 0..data.num_features {
+            if !curr_features.contains(&j) {
+                curr_features.push(j);
+                print!("Using feature set ");
+                print_features(&curr_features);
+                print!(" with accuracy: ");
+                let accuracy = cross_validation(&data, Some(&curr_features));
+                println!("{}", accuracy);
+                if accuracy > curr_accuracy {
+                    best_feature = j;
+                    curr_accuracy = accuracy;
+                }
+                curr_features.pop();
+            }
+        }
+        curr_features.push(best_feature);
+        if curr_accuracy > best_accuracy {
+            best_features = curr_features.clone();
+            best_accuracy = curr_accuracy;
+        }
+    }
+    (best_accuracy, best_features)
 }
 
-pub fn backward_elimination() {
+pub fn backward_elimination(data: Data) -> (f64, Vec<usize>) {
     // Add all features at the start
-    let _features: Vec<usize> = Vec::new();
+    let mut best_features: Vec<usize> = Vec::new();
+    let mut curr_features: Vec<usize> = Vec::new();
+    for i in 0..data.num_features {
+        curr_features.push(i);
+    }
+    let mut best_accuracy = cross_validation(&data, Some(&curr_features));
     // Attempt to remove a feature
+    for _i in 0..data.num_features - 1 {
+        let mut curr_accuracy: f64 = f64::MIN;
+        let mut best_feature = 0;
+        let size = curr_features.len();
+        for j in 0..size - 1 {
+            curr_features.swap(j, size - 1);
+            print!("Using feature set ");
+            print_features(&curr_features[..size - 1]);
+            print!(" of size {} with accuracy ", size - 1);
+            let accuracy = cross_validation(&data, Some(&curr_features[..size - 1]));
+            println!("{}", accuracy);
+            if accuracy > curr_accuracy {
+                best_feature = *curr_features.last().unwrap();
+                curr_accuracy = accuracy;
+            }
+        }
+        curr_features.swap_remove(
+            curr_features
+                .iter()
+                .position(|&x| x == best_feature)
+                .unwrap(),
+        );
+        if curr_accuracy > best_accuracy {
+            best_features = curr_features.clone();
+            best_accuracy = curr_accuracy;
+        }
+    }
+    (best_accuracy, best_features)
 }
 
-pub fn cross_validation(data: Data, mask: Option<&[usize]>) -> f64 {
+pub fn cross_validation(data: &Data, mask: Option<&[usize]>) -> f64 {
     let mut correct = 0;
     for i in 0..data.set.len() {
         // Slice the data set masking out one k-sized section (offset by i)

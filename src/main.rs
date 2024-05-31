@@ -1,5 +1,3 @@
-use std::env;
-
 mod clf;
 mod data;
 mod fread;
@@ -9,20 +7,15 @@ use crate::data::Data;
 use crate::fread::read_data;
 use std::io;
 
-fn main() {
-    /*
-    println!("Number of features: {}", data.num_features);
-    println!("Total data points: {}", data.set.len());
-    for i in 0..data.set.len() {
-        println!("Point {}", i);
-        println!("class: {}", data.set[i].class.unwrap());
-        println!("num features: {}", data.set[i].features.len());
-        for feature in &data.set[i].features {
-            print!("{} ", feature);
-        }
-        println!("");
+fn print_features(arr: &[usize]) {
+    print!("{{");
+    for i in 0..arr.len() - 1 {
+        print!("{}, ", arr[i] + 1);
     }
-    */
+    print!("{}}}", arr[arr.len() - 1] + 1);
+}
+
+fn main() {
     println!("Welcome to Charles Alaras' Feature Selection Algorithm");
     println!("Type in the name of the file to test:");
     let mut str = String::new();
@@ -47,12 +40,14 @@ fn main() {
     */
     // Test cross validation
     // Note: zero indexed features
-    let features = vec![28, 3, 0];
-    let accuracy = cross_validation(data, Some(&features));
-    println!("Using features 29, 4, 1, the accuracy is: {}", accuracy);
     // All features
 
     // Forward / Backward Elimination
+    let (accuracy, best_features) = forward_selection(data);
+    //let (accuracy, best_features) = backward_elimination(data);
 
+    print!("\nThe best feature set is: ");
+    print_features(&best_features);
+    println!(" with accuracy: {}", accuracy);
     // Return the best
 }
