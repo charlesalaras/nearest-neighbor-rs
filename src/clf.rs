@@ -21,72 +21,67 @@ pub fn nearest_neighbor(data: &Data, point: &Point, mask: Option<&[usize]>) -> u
 }
 
 pub fn forward_selection(data: Data) -> (f64, Vec<usize>) {
-    // Start with no features (default rate)
-    let mut curr_features: Vec<usize> = Vec::new();
+    let mut features: Vec<usize> = Vec::new();
     let mut best_size = 0;
+    let mut best_accuracy = cross_validation(&data, Some(&features));
     for i in 0..data.num_features {
-        curr_features.push(i);
-    }
-    let mut best_accuracy = cross_validation(&data, Some(&curr_features));
-    // Attempt to add a feature at each stage
-    for i in 0..data.num_features {
-        let mut curr_accuracy: f64 = f64::MIN;
-        let mut best_index = 0;
-        println!("On the {}th level of search", i);
-        for j in i..data.num_features {
-            curr_features.swap(i, j);
-            print!("Using features ");
-            print_features(&curr_features[..i + 1]);
-            let accuracy = cross_validation(&data, Some(&curr_features[..i + 1]));
-            println!(" accuracy is {}", accuracy);
-            if accuracy > curr_accuracy {
-                best_index = j;
-                curr_accuracy = accuracy;
+        let mut curr_accuracy = f64::MIN;
+        let mut best_feature = 0;
+        for j in 0..data.num_features {
+            if !features.contains(&j) {
+                features.push(j);
+                let accuracy = cross_validation(&data, Some(&features));
+                println!(
+                    "Using features {} with accuracy {}",
+                    print_features(&features),
+                    accuracy
+                );
+                if accuracy > curr_accuracy {
+                    best_feature = j;
+                    curr_accuracy = accuracy;
+                }
+                features.pop();
             }
-            curr_features.swap(j, i);
         }
-        curr_features.swap(i, best_index);
+        features.push(best_feature);
         if curr_accuracy > best_accuracy {
             best_size = i + 1;
             best_accuracy = curr_accuracy;
         }
     }
-    (best_accuracy, curr_features[..best_size].to_vec())
+    (best_accuracy, features[..best_size].to_vec())
 }
 
 pub fn backward_elimination(data: Data) -> (f64, Vec<usize>) {
-    // Add all features at the start
+    let mut features: Vec<usize> = Vec::new();
     let mut best_features: Vec<usize> = Vec::new();
-    let mut curr_features: Vec<usize> = Vec::new();
     for i in 0..data.num_features {
-        curr_features.push(i);
+        features.push(i);
     }
-    let mut best_accuracy = cross_validation(&data, Some(&curr_features));
-    // Attempt to remove a feature
-    for _i in 0..data.num_features - 1 {
-        let mut curr_accuracy: f64 = f64::MIN;
+    let mut best_accuracy = cross_validation(&data, Some(&features));
+    for _i in 0..data.num_features {
+        let mut curr_accuracy = f64::MIN;
         let mut best_feature = 0;
-        let size = curr_features.len();
-        for j in 0..size - 1 {
-            curr_features.swap(j, size - 1);
-            print!("Using feature set ");
-            print_features(&curr_features[..size - 1]);
-            print!(" of size {} with accuracy ", size - 1);
-            let accuracy = cross_validation(&data, Some(&curr_features[..size - 1]));
-            println!("{}", accuracy);
-            if accuracy > curr_accuracy {
-                best_feature = *curr_features.last().unwrap();
-                curr_accuracy = accuracy;
+        for j in 0..data.num_features {
+            if features.contains(&j) {
+                features.swap_remove(features.iter().position(|&x| x == j).unwrap());
+                let accuracy = cross_validation(&data, Some(&features));
+                println!(
+                    "Using features {} with accuracy {}",
+                    print_features(&features),
+                    accuracy
+                );
+                if accuracy > curr_accuracy {
+                    best_feature = j;
+                    curr_accuracy = accuracy;
+                }
+                features.push(j);
             }
         }
-        curr_features.swap_remove(
-            curr_features
-                .iter()
-                .position(|&x| x == best_feature)
-                .unwrap(),
-        );
+        println!("The best feature to remove is: {}", best_feature + 1);
+        features.swap_remove(features.iter().position(|&x| x == best_feature).unwrap());
         if curr_accuracy > best_accuracy {
-            best_features = curr_features.clone();
+            best_features = features.clone();
             best_accuracy = curr_accuracy;
         }
     }

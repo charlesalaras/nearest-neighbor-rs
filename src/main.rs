@@ -7,12 +7,16 @@ use crate::data::Data;
 use crate::fread::read_data;
 use std::io;
 
-fn print_features(arr: &[usize]) {
-    print!("{{");
-    for i in 0..arr.len() - 1 {
-        print!("{}, ", arr[i] + 1);
+fn print_features(arr: &[usize]) -> String {
+    if arr.len() == 0 {
+        return String::from("{}");
     }
-    print!("{}}}", arr[arr.len() - 1] + 1);
+    let mut s = String::from("{");
+    for i in 0..arr.len() - 1 {
+        s.push_str(format!("{}, ", arr[i] + 1).as_str());
+    }
+    s.push_str(format!("{}}}", arr[arr.len() - 1] + 1).as_str());
+    s
 }
 
 fn main() {
@@ -43,11 +47,13 @@ fn main() {
     // All features
 
     // Forward / Backward Elimination
-    let (accuracy, best_features) = forward_selection(data);
-    //let (accuracy, best_features) = backward_elimination(data);
+    //let (accuracy, best_features) = forward_selection(data);
+    let (accuracy, best_features) = backward_elimination(data);
 
-    print!("\nThe best feature set is: ");
-    print_features(&best_features);
-    println!(" with accuracy: {}", accuracy);
+    println!(
+        "\nThe best feature set is: {} with accuracy {}",
+        print_features(&best_features),
+        accuracy
+    );
     // Return the best
 }
