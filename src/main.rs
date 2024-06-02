@@ -6,6 +6,7 @@ use crate::clf::*;
 use crate::data::Data;
 use crate::fread::read_data;
 use std::io;
+use std::time::{Duration, Instant};
 
 fn print_features(arr: &[usize]) -> String {
     if arr.len() == 0 {
@@ -32,28 +33,43 @@ fn main() {
         data.num_features,
         data.set.len()
     );
-    /*
-        println!("Type the number of the algorithm you want to run:");
-        println!("1) Forward Selection");
-        println!("2) Backward Elimination");
-        loop {
-            io::stdin()
-                .read_line(&mut str)
-                .expect("Failed to parse input");
-        }
-    */
-    // Test cross validation
-    // Note: zero indexed features
-    // All features
 
-    // Forward / Backward Elimination
-    //let (accuracy, best_features) = forward_selection(data);
-    let (accuracy, best_features) = backward_elimination(data);
+    println!("Type the number of the algorithm you want to run:");
+    println!("1) Forward Selection");
+    println!("2) Backward Elimination");
+    let mut result;
+    loop {
+        str.clear();
+        io::stdin()
+            .read_line(&mut str)
+            .expect("Failed to parse input");
+        let number = str.trim().parse::<u32>();
+        if number.is_err() {
+            println!("ERROR!: Received string: {}", str);
+        } else {
+            result = number.unwrap();
+            if result != 1 && result != 2 {
+                println!("ERROR!: Please enter 1 or 2.");
+            } else {
+                break;
+            }
+        }
+    }
+    let start_time: Instant = Instant::now();
+
+    let (accuracy, best_features) = if result == 1 {
+        forward_selection(data)
+    } else {
+        backward_elimination(data)
+    };
+
+    let duration = start_time.elapsed();
 
     println!(
-        "\nThe best feature set is: {} with accuracy {}",
+        "\nThe best feature set is: {} with accuracy {:.1}%",
         print_features(&best_features),
-        accuracy
+        accuracy * 100.0
     );
-    // Return the best
+
+    println!("Runtime: {:.2}s", duration.as_secs_f32());
 }

@@ -24,6 +24,10 @@ pub fn forward_selection(data: Data) -> (f64, Vec<usize>) {
     let mut features: Vec<usize> = Vec::new();
     let mut best_size = 0;
     let mut best_accuracy = cross_validation(&data, Some(&features));
+    println!(
+        "With no features, the accuracy is {:.1}%",
+        best_accuracy * 100.0
+    );
     for i in 0..data.num_features {
         let mut curr_accuracy = f64::MIN;
         let mut best_feature = 0;
@@ -32,9 +36,9 @@ pub fn forward_selection(data: Data) -> (f64, Vec<usize>) {
                 features.push(j);
                 let accuracy = cross_validation(&data, Some(&features));
                 println!(
-                    "Using features {} with accuracy {}",
+                    "\tUsing features {} with accuracy {:.1}%",
                     print_features(&features),
-                    accuracy
+                    accuracy * 100.0
                 );
                 if accuracy > curr_accuracy {
                     best_feature = j;
@@ -44,6 +48,11 @@ pub fn forward_selection(data: Data) -> (f64, Vec<usize>) {
             }
         }
         features.push(best_feature);
+        println!(
+            "Feature set {} is best with accuracy {:.1}%",
+            print_features(&features),
+            curr_accuracy * 100.0
+        );
         if curr_accuracy > best_accuracy {
             best_size = i + 1;
             best_accuracy = curr_accuracy;
@@ -59,6 +68,10 @@ pub fn backward_elimination(data: Data) -> (f64, Vec<usize>) {
         features.push(i);
     }
     let mut best_accuracy = cross_validation(&data, Some(&features));
+    println!(
+        "With all features, the accuracy is {:.1}%",
+        best_accuracy * 100.0
+    );
     for _i in 0..data.num_features {
         let mut curr_accuracy = f64::MIN;
         let mut best_feature = 0;
@@ -67,9 +80,9 @@ pub fn backward_elimination(data: Data) -> (f64, Vec<usize>) {
                 features.swap_remove(features.iter().position(|&x| x == j).unwrap());
                 let accuracy = cross_validation(&data, Some(&features));
                 println!(
-                    "Using features {} with accuracy {}",
+                    "\tUsing features {} with accuracy {:.1}%",
                     print_features(&features),
-                    accuracy
+                    accuracy * 100.0
                 );
                 if accuracy > curr_accuracy {
                     best_feature = j;
@@ -78,8 +91,12 @@ pub fn backward_elimination(data: Data) -> (f64, Vec<usize>) {
                 features.push(j);
             }
         }
-        println!("The best feature to remove is: {}", best_feature + 1);
         features.swap_remove(features.iter().position(|&x| x == best_feature).unwrap());
+        println!(
+            "Feature set {} is best with accuracy {:.1}%",
+            print_features(&features),
+            curr_accuracy * 100.0
+        );
         if curr_accuracy > best_accuracy {
             best_features = features.clone();
             best_accuracy = curr_accuracy;
