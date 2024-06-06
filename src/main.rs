@@ -6,7 +6,7 @@ use crate::clf::*;
 use crate::data::Data;
 use crate::fread::read_data;
 use std::io;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 fn print_features(arr: &[usize]) -> String {
     if arr.len() == 0 {

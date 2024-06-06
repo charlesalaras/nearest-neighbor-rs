@@ -38,14 +38,3 @@ pub struct Data {
     pub num_features: usize,
     pub set: Vec<Point>,
 }
-
-impl Data {
-    pub fn insert_point(&mut self, features: Vec<f64>, class: u32) {
-        if features.len() == self.num_features {
-            self.set.push(Point {
-                class: Some(class),
-                features,
-            });
-        }
-    }
-}
