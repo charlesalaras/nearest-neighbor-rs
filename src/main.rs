@@ -6,17 +6,18 @@ use crate::clf::*;
 use crate::data::Data;
 use crate::fread::read_data;
 use std::io;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 fn print_features(arr: &[usize]) -> String {
     if arr.len() == 0 {
         return String::from("{}");
     }
-    let mut s = String::from("{");
+    //let mut s = String::from("{");
+    let mut s = String::from("");
     for i in 0..arr.len() - 1 {
         s.push_str(format!("{}, ", arr[i] + 1).as_str());
     }
-    s.push_str(format!("{}}}", arr[arr.len() - 1] + 1).as_str());
+    s.push_str(format!("{}", arr[arr.len() - 1] + 1).as_str());
     s
 }
 
@@ -64,7 +65,7 @@ fn main() {
     };
 
     let duration = start_time.elapsed();
-
+    /*
     println!(
         "\nThe best feature set is: {} with accuracy {:.1}%",
         print_features(&best_features),
@@ -72,4 +73,5 @@ fn main() {
     );
 
     println!("Runtime: {:.2}s", duration.as_secs_f32());
+    */
 }
